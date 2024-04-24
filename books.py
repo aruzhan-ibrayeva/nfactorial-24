@@ -14,16 +14,17 @@ def show_books_list():
 def show_book_details(book_id):
     book = get_book_data(book_id)
     if book:
-        st.image(book[5], width=100)
-        st.write('Title:', book[1])
-        st.write('Author:', book[2])
-        st.write('Publish Date:', book[3])
-        st.write('ISBN:', book[4])
-        st.write('Synopsis:', book[6])
+        st.write('Title:', book[1])  # Assuming book[1] is the title
+        st.write('Author:', book[2])  # Assuming book[2] is the author
+        st.write('Publish Date:', book[3])  # Assuming book[3] is the publish date
+        st.write('ISBN:', book[4])  # Assuming book[4] is the ISBN
+        st.write('Synopsis:', book[5])  # Assuming book[5] is the synopsis
+
         reviews = get_book_reviews(book_id)
         for review in reviews:
-            st.write('Rating:', '⭐' * review[4])
-            st.text_area("Review:", review[3], disabled=True)
+            st.write('Rating:', '⭐' * review[4])  # Assuming review[4] is the rating
+            st.text_area("Review:", review[3], disabled=True)  # Assuming review[3] is the review text
+
         with st.form("Review Form"):
             new_review_text = st.text_area("Write your review:")
             new_rating = st.slider("Rating", 1, 5)

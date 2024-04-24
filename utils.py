@@ -21,7 +21,6 @@ def create_books_table():
                       title TEXT, author TEXT, 
                       publish_date TEXT, 
                       isbn TEXT, 
-                      cover_image TEXT, 
                       synopsis TEXT)''')
         conn.commit()
 
@@ -86,24 +85,22 @@ def get_book_reviews(book_id):
 def add_review(book_id, user_id, review, rating):
     with get_conn() as conn:
         c = conn.cursor()
-        try:
-            c.execute('INSERT INTO Reviews_Table (book_id, user_id, review, rating) VALUES (?, ?, ?, ?)', 
-                      (book_id, user_id, review, rating))
-            conn.commit()
-            return True
-        except sqlite3.Error:
-            return False
+        c.execute('INSERT INTO Reviews_Table (book_id, user_id, review, rating) VALUES (?, ?, ?, ?)', 
+                  (book_id, user_id, review, rating))
+        conn.commit()
 
 def initialize_books_db():
     with get_conn() as conn:
         c = conn.cursor()
-        # List of initial books
-        initial_books = [
-            (1, '1984', 'George Orwell', '1949', '9780451524935', 'image_url', 'Synopsis of 1984'),
-            (2, 'To Kill a Mockingbird', 'Harper Lee', '1960', '9780060935467', 'image_url', 'Synopsis of To Kill a Mockingbird'),
-            (3, 'The Great Gatsby', 'F. Scott Fitzgerald', '1925', '9780743273565', 'image_url', 'Synopsis of The Great Gatsby')
-        ]
-        # Insert the initial books
-        c.executemany('INSERT INTO Books_Table (id, title, author, publish_date, isbn, cover_image, synopsis) VALUES (?, ?, ?, ?, ?, ?, ?)', initial_books)
-        conn.commit()
-
+        # Check if there are already entries in the table
+        c.execute('SELECT COUNT(*) FROM Books_Table')
+        if c.fetchone()[0] == 0:  # Only insert if the table is empty
+            # List of initial books
+            initial_books = [
+                ('1984', 'George Orwell', '1949', '9780451524935', 'Synopsis of 1984'),
+                ('To Kill a Mockingbird', 'Harper Lee', '1960', '9780060935467', 'Synopsis of To Kill a Mockingbird'),
+                ('The Great Gatsby', 'F. Scott Fitzgerald', '1925', '9780743273565', 'Synopsis of The Great Gatsby')
+            ]
+            # Insert the initial books
+            c.executemany('INSERT INTO Books_Table (title, author, publish_date, isbn, synopsis) VALUES (?, ?, ?, ?, ?)', initial_books)
+            conn.commit()
