@@ -13,12 +13,14 @@ def main():
     create_header()
     choice = create_navbar()
 
-    if choice == "Home" and 'user_id' in st.session_state:
-        st.subheader("Home - Browse Books")
-        book_id = show_books_list()
-        if book_id is not None: 
-            show_book_details(book_id)
-
+    if choice == "Home":
+        if 'user_id' in st.session_state and st.session_state['user_id']:
+            st.subheader("Home - Browse Books")
+            book_id = show_books_list()
+            if book_id is not None: 
+                show_book_details(book_id)
+        else:
+            st.warning("Please log in to view the books list.")
 
 if __name__ == '__main__':
     sidebar_login()
