@@ -1,4 +1,5 @@
 import streamlit as st
+import requests
 from authentication import sidebar_login
 from books import show_books_list, show_book_details
 from layout import create_header, create_navbar
