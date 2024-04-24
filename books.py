@@ -6,8 +6,10 @@ def show_books_list():
     if not books:
         st.warning("No books available to display.")
         return None
-    book_id = st.selectbox("Choose a book to view details", books, format_func=lambda x: f"{x[1]} by {x[2]}")
-    return book_id[0] if book_id else None
+    book_options = [(book[0], f"{book[1]} by {book[2]}") for book in books]
+    book_tuple = st.selectbox("Choose a book to view details", options=book_options, format_func=lambda x: x[1])
+    return book_tuple[0] if book_tuple else None
+
 
 def show_book_details(book_id):
     book = get_book_data(book_id)
@@ -22,8 +24,9 @@ def show_book_details(book_id):
         if reviews:
             with st.expander("See reviews"):
                 for index, review in enumerate(reviews):
-                    st.write('Rating:', '⭐' * review[4])
-                    st.text_area("Review:", review[3], disabled=True, key=f"review_{index}") 
+                    rating_display = '⭐' * int(review[4]) if isinstance(review[4], int) and 0 <= review[4] <= 5 else "No rating"
+                    st.write('Rating:', rating_display)
+                    st.text_area("Review:", review[3], disabled=True, key=f"review_{index}")
         else:
             st.write("No reviews available for this book.")
 

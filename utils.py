@@ -17,12 +17,16 @@ def create_usertable():
 def create_books_table():
     with get_conn() as conn:
         c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS Books_Table (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                      title TEXT, author TEXT, 
-                      publish_date TEXT, 
-                      isbn TEXT, 
-                      synopsis TEXT)''')
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS Books_Table (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT,
+                author TEXT,
+                publish_date TEXT,
+                isbn TEXT,
+                synopsis TEXT
+            )
+        ''')
         conn.commit()
 
 def create_reviews_table():
@@ -63,9 +67,10 @@ def login_user(username, hashed_password):
     with get_conn() as conn:
         c = conn.cursor()
         c.execute('SELECT id, username FROM Users_Table WHERE username =? AND password = ?', (username, hashed_password))
-        return c.fetchone()
+        data = c.fetchone()
+        return data
 
-def get_all_books():
+def get_all_books_from_api():
     url = "https://www.googleapis.com/books/v1/volumes"
     params = {
         "q": "subject:fiction",
@@ -74,31 +79,34 @@ def get_all_books():
     response = requests.get(url, params=params)
     if response.status_code == 200:
         books = response.json().get("items", [])
-        formatted_books = []
+        book_data = []
         for book in books:
             volume_info = book.get("volumeInfo", {})
             title = volume_info.get("title", "Unknown Title")
             authors = volume_info.get("authors", ["Unknown Author"])
-            formatted_books.append((title, ", ".join(authors), "", "", "", ""))
-        return formatted_books
+            publish_date = volume_info.get("publishedDate", "")
+            isbn_list = volume_info.get("industryIdentifiers", [])
+            isbn = next((identifier['identifier'] for identifier in isbn_list if identifier['type'] == 'ISBN_13'), "")
+            synopsis = volume_info.get("description", "No description available.")
+            book_data.append((title, ", ".join(authors), publish_date, isbn, synopsis))
+        return book_data
     else:
         return []
 
-def initialize_books_db():
+def sync_books_db():
+    books_from_api = get_all_books_from_api()
     with get_conn() as conn:
         c = conn.cursor()
-        c.execute('SELECT COUNT(*) FROM Books_Table')
-        if c.fetchone()[0] == 0:
-            initial_books = get_all_books()
-            if initial_books:
-                c.executemany('INSERT INTO Books_Table (title, author, publish_date, isbn, synopsis) VALUES (?, ?, ?, ?, ?)', initial_books)
-                conn.commit()
+        for book in books_from_api:
+            # Inserting new books into the Books_Table
+            c.execute('INSERT INTO Books_Table (title, author, publish_date, isbn, synopsis) VALUES (?, ?, ?, ?, ?)', book)
+        conn.commit()
 
-# def get_all_books():
-#     with get_conn() as conn:
-#         c = conn.cursor()
-#         c.execute('SELECT id, title, author FROM Books_Table')
-#         return c.fetchall()
+def get_all_books():
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, title, author FROM Books_Table')
+        return c.fetchall()
 
 def get_book_data(book_id):
     with get_conn() as conn:
@@ -115,19 +123,12 @@ def get_book_reviews(book_id):
 def add_review(book_id, user_id, review, rating):
     with get_conn() as conn:
         c = conn.cursor()
-        c.execute('INSERT INTO Reviews_Table (book_id, user_id, review, rating) VALUES (?, ?, ?, ?)', 
-                  (book_id, user_id, review, rating))
+        c.execute('INSERT INTO Reviews_Table (book_id, user_id, review, rating) VALUES (?, ?, ?, ?)', (book_id, user_id, review, rating))
         conn.commit()
 
-# def initialize_books_db():
-#     with get_conn() as conn:
-#         c = conn.cursor()
-#         c.execute('SELECT COUNT(*) FROM Books_Table')
-#         if c.fetchone()[0] == 0:  
-#             initial_books = [
-#                 ('1984', 'George Orwell', '1949', '9780451524935', 'Synopsis of 1984'),
-#                 ('To Kill a Mockingbird', 'Harper Lee', '1960', '9780060935467', 'Synopsis of To Kill a Mockingbird'),
-#                 ('The Great Gatsby', 'F. Scott Fitzgerald', '1925', '9780743273565', 'Synopsis of The Great Gatsby')
-#             ]
-#             c.executemany('INSERT INTO Books_Table (title, author, publish_date, isbn, synopsis) VALUES (?, ?, ?, ?, ?)', initial_books)
-#             conn.commit()
+def initialize_books_db():
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT COUNT(*) FROM Books_Table')
+        if c.fetchone()[0] == 0:
+            sync_books_db()  
