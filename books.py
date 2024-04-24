@@ -14,27 +14,27 @@ def show_books_list():
 def show_book_details(book_id):
     book = get_book_data(book_id)
     if book:
-        st.write('Title:', book[1])  # Assuming book[1] is the title
-        st.write('Author:', book[2])  # Assuming book[2] is the author
-        st.write('Publish Date:', book[3])  # Assuming book[3] is the publish date
-        st.write('ISBN:', book[4])  # Assuming book[4] is the ISBN
-        st.write('Synopsis:', book[5])  # Assuming book[5] is the synopsis
+        st.write('Title:', book[1])  
+        st.write('Author:', book[2]) 
+        st.write('Publish Date:', book[3]) 
+        st.write('ISBN:', book[4])  
+        st.write('Synopsis:', book[5])  
 
         reviews = get_book_reviews(book_id)
-        for review in reviews:
-            st.write('Rating:', '⭐' * review[4])  # Assuming review[4] is the rating
-            st.text_area("Review:", review[3], disabled=True)  # Assuming review[3] is the review text
+        if reviews:
+            for index, review in enumerate(reviews):
+                review_key = f"review_{review[0]}_{index}"  
+                st.write('Rating:', '⭐' * review[4]) 
+                st.text_area("Review:", review[3], disabled=True, key=review_key)  
+        else:
+            st.write("No reviews available for this book.")
 
         with st.form("Review Form"):
             new_review_text = st.text_area("Write your review:")
             new_rating = st.slider("Rating", 1, 5)
             submitted = st.form_submit_button("Submit Review")
-            if submitted and 'user_id' in st.session_state:
+            if submitted:
                 success = add_review(book_id, st.session_state['user_id'],
                                       new_review_text, new_rating)
                 if success:
                     st.success("Review added!")
-                else:
-                    st.error("Failed to submit the review.")
-            elif submitted:
-                st.error("You need to log in to submit reviews.")
