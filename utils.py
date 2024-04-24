@@ -93,3 +93,17 @@ def add_review(book_id, user_id, review, rating):
             return True
         except sqlite3.Error:
             return False
+
+def initialize_books_db():
+    with get_conn() as conn:
+        c = conn.cursor()
+        # List of initial books
+        initial_books = [
+            (1, '1984', 'George Orwell', '1949', '9780451524935', 'image_url', 'Synopsis of 1984'),
+            (2, 'To Kill a Mockingbird', 'Harper Lee', '1960', '9780060935467', 'image_url', 'Synopsis of To Kill a Mockingbird'),
+            (3, 'The Great Gatsby', 'F. Scott Fitzgerald', '1925', '9780743273565', 'image_url', 'Synopsis of The Great Gatsby')
+        ]
+        # Insert the initial books
+        c.executemany('INSERT INTO Books_Table (id, title, author, publish_date, isbn, cover_image, synopsis) VALUES (?, ?, ?, ?, ?, ?, ?)', initial_books)
+        conn.commit()
+
