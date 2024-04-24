@@ -92,15 +92,12 @@ def add_review(book_id, user_id, review, rating):
 def initialize_books_db():
     with get_conn() as conn:
         c = conn.cursor()
-        # Check if there are already entries in the table
         c.execute('SELECT COUNT(*) FROM Books_Table')
-        if c.fetchone()[0] == 0:  # Only insert if the table is empty
-            # List of initial books
+        if c.fetchone()[0] == 0:  
             initial_books = [
                 ('1984', 'George Orwell', '1949', '9780451524935', 'Synopsis of 1984'),
                 ('To Kill a Mockingbird', 'Harper Lee', '1960', '9780060935467', 'Synopsis of To Kill a Mockingbird'),
                 ('The Great Gatsby', 'F. Scott Fitzgerald', '1925', '9780743273565', 'Synopsis of The Great Gatsby')
             ]
-            # Insert the initial books
             c.executemany('INSERT INTO Books_Table (title, author, publish_date, isbn, synopsis) VALUES (?, ?, ?, ?, ?)', initial_books)
             conn.commit()

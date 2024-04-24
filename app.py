@@ -16,7 +16,7 @@ def main():
     if choice == "Home" and 'user_id' in st.session_state:
         st.subheader("Home - Browse Books")
         book_id = show_books_list()
-        if book_id is not None: # Add this check
+        if book_id is not None: 
             show_book_details(book_id)
 
 
