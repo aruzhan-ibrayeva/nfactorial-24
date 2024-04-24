@@ -25,7 +25,7 @@ def show_book_details(book_id):
             for index, review in enumerate(reviews):
                 review_key = f"review_{review[0]}_{index}"  
                 st.write('Rating:', '⭐' * review[4]) 
-                st.text_area("Review:", review[3], disabled=True, key=review_key)  
+                st.text_area("Review:", review[3], disabled=True, key=review_key) 
         else:
             st.write("No reviews available for this book.")
 
@@ -34,7 +34,6 @@ def show_book_details(book_id):
             new_rating = st.slider("Rating", 1, 5)
             submitted = st.form_submit_button("Submit Review")
             if submitted:
-                success = add_review(book_id, st.session_state['user_id'],
+                add_review(book_id, st.session_state['user_id'],
                                       new_review_text, new_rating)
-                if success:
-                    st.success("Review added!")
+                st.success("Review added!")
