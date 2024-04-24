@@ -10,7 +10,6 @@ def main():
     create_books_table()
     create_reviews_table()
     initialize_books_db()
-    sync_books_db() 
 
     create_header()
     choice = create_navbar()
